@@ -1,35 +1,74 @@
 import React, { useEffect, useState } from 'react'
 import { Container, Row, Col, Form, Button, Table } from 'react-bootstrap'
-import axios, { Axios } from 'axios';
+import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import "./crud.css";
+import Common from "./../Common";
 
 const Crud = () => {
 
+    // const apiUrl = process.env.REACT_APP_API_URL; // ENV URL
+    const apiUrl = "http://localhost:8000"; // local url
+
+    // Form
     const [userData, setUserData] = useState([]);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [mobile, setMobile] = useState("");
     const [city, setCity] = useState("");
     const [isEdit, setIsEdit] = useState(false);
+    const [image, setImage] = useState("");
+    const [uId, setUid] = useState(0);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isRegistered, setIsRegisterd] = useState(false);
 
     useEffect(() => {
         getUserData();
     }, []);
 
     const getUserData = () => {
-        axios.get("http://localhost:8000/api/user").then((res) => {
+        axios.get(`${apiUrl}/api/user`).then((res) => {
             setUserData(res.data);
         });
     }
 
     const handleSubmit = (e) => {
-        e.prevent.default();
+        e.preventDefault();
     }
 
+    // const handleAdd = () => {
+    //     let msg = '';
+    //     if (!name || !email || !mobile || !mobile || !city) {
+    //         if (!name) msg += 'Name, ';
+    //         if (!email) msg += 'Email, ';
+    //         if (!mobile) msg += 'Mobile, ';
+    //         if (!city) msg += 'City, ';
+    //         alert(`Please fill the following fields: ${msg.slice(0, -2)}`);
+    //         return;
+    //     }
+    //     // axios.post("http://localhost:8000/api/user", { name: name, email: email, mobile: mobile, city: city })
+    //     axios.post(`${apiUrl}/api/userPost`, {
+    //         name,
+    //         email,
+    //         mobile,
+    //         city
+    //     })
+    //         .then((res) => {
+    //             alert(`User Added Successfully!`);
+    //             setName("");
+    //             setEmail("");
+    //             setMobile("");
+    //             setCity("");
+    //             getUserData();
+    //         }).catch((err) => {
+    //             alert(`Error while Adding user: ${err.message}`);
+    //         });
+    // }
+
     const handleAdd = () => {
-        let msg = '';
-        if (!name || !email || !mobile || !mobile || !city) {
+        if (!name || !email || !mobile || !city) {
+            let msg = '';
             if (!name) msg += 'Name, ';
             if (!email) msg += 'Email, ';
             if (!mobile) msg += 'Mobile, ';
@@ -37,28 +76,33 @@ const Crud = () => {
             alert(`Please fill the following fields: ${msg.slice(0, -2)}`);
             return;
         }
-        // axios.post("http://localhost:8000/api/user", { name: name, email: email, mobile: mobile, city: city })
-        axios.post("http://localhost:8000/api/user", {
-            name,
-            email,
-            mobile,
-            city
-        })
+
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("email", email);
+        formData.append("mobile", mobile);
+        formData.append("city", city);
+        if (image) formData.append("image", image);  // ✅ attach image file
+
+        axios.post(`${apiUrl}/api/userPost`, formData)
             .then((res) => {
-                alert(`User Added Successfully!`);
+                alert("User Added Successfully");
                 setName("");
                 setEmail("");
                 setMobile("");
                 setCity("");
+                setImage("");
                 getUserData();
-            }).catch((err) => {
-                alert(`Error while Adding user: ${err.message}`);
+            })
+            .catch((err) => {
+                alert("Error: " + err.message);
             });
-    }
+    };
 
     const handleEdit = (id) => {
+        setUid(id);
         setIsEdit(true);
-        axios.get(`http://localhost:8000/api/user/${id}`).then((res) => {
+        axios.get(`${apiUrl}/api/userEdit/${id}`).then((res) => {
             const data = res.data;
             setName(data.u_name);
             setEmail(data.u_email);
@@ -70,27 +114,56 @@ const Crud = () => {
     }
 
     const handleUpdate = () => {
+        axios.put(`${apiUrl}/api/userUpdate/${uId}`, {
+            name, email, mobile, city
+        }).then((res) => {
+            alert("User Updated");
+            setIsEdit(false);
+            setName("");
+            setEmail("");
+            setMobile("");
+            setCity("");
+            setImage("");
+            getUserData();
+        }).catch((err) => {
+            alert(`Error: ${err.message}`);
+        });
+    };
 
-    }
 
-    const handleDelete = () => {
+    const handleDelete = (id) => {
+        if (!window.confirm("Are you sure to delete this user?")) return;
 
-    }
+        axios.delete(`${apiUrl}/api/userDelete/${id}`)
+            .then((res) => {
+                alert("User deleted successfully");
+                getUserData();
+            }).catch((err) => {
+                alert("Error deleting user: " + err.message);
+            });
+    };
+
 
     return (
         <>
-            <Container fluid>
+            <Container className='mt-5 w-50'>
                 <Row>
-                    <Col>
-                        <h5>Crud Operation</h5>
+                    <Col className='text-center bg-success'>
+                        <h3> Please Fill Your Form </h3>
                     </Col>
                 </Row>
                 <Row>&nbsp;</Row>
+                {
+                    !isLoggedIn &&
+                    <>
+
+                    </>
+                }
                 <Form onSubmit={handleSubmit}>
                     <Row>
-                        <Col className='col-6 col-md-3'>
+                        <Col className='col-6 col-md-6'>
                             <Form.Group>
-                                <Form.Label>Enter Your Name : </Form.Label>
+                                <Form.Label>Name : </Form.Label>
                                 <Form.Control
                                     type='text'
                                     placeholder='Enter Your Name'
@@ -99,9 +172,9 @@ const Crud = () => {
                                 />
                             </Form.Group>
                         </Col>
-                        <Col className='col-6 col-md-3'>
+                        <Col className='col-6 col-md-6'>
                             <Form.Group>
-                                <Form.Label>Enter Your Email : </Form.Label>
+                                <Form.Label>Email : </Form.Label>
                                 <Form.Control
                                     type='text'
                                     placeholder='Enter Your Name'
@@ -110,9 +183,10 @@ const Crud = () => {
                                 />
                             </Form.Group>
                         </Col>
-                        <Col className='col-6 col-md-3'>
+                    </Row><Row>
+                        <Col className='col-6 col-md-6'>
                             <Form.Group>
-                                <Form.Label>Enter Mobile No.</Form.Label>
+                                <Form.Label>Mobile No.</Form.Label>
                                 <Form.Control
                                     type='text'
                                     placeholder='Enter Your Mobile No.'
@@ -121,9 +195,9 @@ const Crud = () => {
                                 />
                             </Form.Group>
                         </Col>
-                        <Col className='col-6 col-md-3'>
+                        <Col className='col-6 col-md-6'>
                             <Form.Group>
-                                <Form.Label>Enter Your City</Form.Label>
+                                <Form.Label>Your City</Form.Label>
                                 <Form.Control
                                     type='text'
                                     placeholder='Enter Your City'
@@ -133,18 +207,26 @@ const Crud = () => {
                             </Form.Group>
                         </Col>
                     </Row>
+                    <Row>
+                        <Col className='col-6 col-md-6  '>
+                            <Form.Group>
+                                <Form.Label>Select Picture</Form.Label>
+                                <Form.Control
+                                    type='file'
+                                    onChange={(e) => setImage(e.target.files[0])}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col style={{ marginTop: '35px' }}>
+                            {
+                                !isEdit ?
+                                    <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
+                                    :
+                                    <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
+                            }
+                        </Col>
+                    </Row>
                 </Form>
-                <Row>&nbsp;</Row>
-                <Row>
-                    <Col>
-                        {
-                            !isEdit ?
-                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
-                                :
-                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
-                        }
-                    </Col>
-                </Row>
                 <Row>&nbsp;</Row>
                 {
                     !isEdit &&
@@ -152,7 +234,7 @@ const Crud = () => {
 
                         <Row>
                             <Col>
-                                <Table>
+                                <Table bordered striped>
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -174,10 +256,10 @@ const Crud = () => {
                                                     <td>{row.u_city}</td>
                                                     <td>
                                                         <div>
-                                                            <span className='colorThemeBlue' onClick={handleEdit(row.u_id)}>
+                                                            <span className='colorThemeBlue' onClick={() => handleEdit(row.u_id)}>
                                                                 <FontAwesomeIcon icon={faPenToSquare} />
-                                                            </span> &nbsp; &nbsp; &nbsp; &nbsp;
-                                                            <span className='colorThemeBlue' onClick={handleDelete(row.u_id)}>
+                                                            </span> &nbsp;
+                                                            <span className='colorThemeBlue' onClick={() => handleDelete(row.u_id)} >
                                                                 <FontAwesomeIcon icon={faTrash} />
                                                             </span>
                                                         </div>

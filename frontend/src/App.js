@@ -1,4 +1,4 @@
-import Crud from "./Crud";
+import Crud from "./Components/Crud";
 
 function App() {
   return (
