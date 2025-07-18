@@ -1,15 +1,20 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
+import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 
 const Register = () => {
 
-    // Register
-    const [regName, setRegName] = useState("");
-    const [regEmail, setRegEmail] = useState("");
-    const [regPassword, setRegPassword] = useState("");
+
+
+    const onSwitchToLogin = () => {
+        // setIsLoggedIn(true);
+    }
 
     return (
         <>
+            <Container>
 
+
+            </Container>
         </>
     )
 }

@@ -19,7 +19,35 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 app.use('/uploads', express.static('uploads'));
 
-// db.connect();
+// User Register === 
+app.post(`/api/register`, async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
+    console.log(`The vlue of registers : ${req.body}`);
+    try {
+        const maxSrno = await db.query("SELECT COALESCE(MAX(uinfo_srno), 0) + 1 AS next_srno FROM user_info");
+        const nextSrno = maxSrno.rows[0].next_srno;
+        const insertRes = await db.query("INSERT INTO user_info(uinfo_srno, uinfo_first_name, uinfo_last_name, uinfo_email, uinfo_password) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [nextSrno, firstName, lastName, email, password]
+        );
+        res.status(201).json(insertRes.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// user Login === 
+app.get(`api/userLogin`, (req, res) => {
+    const { userEmail, userPass } = req.body;
+    const fetQuery = db.query("SELECT COUNT(*) FROM user_info WHERE uinfo_email = $1, uinfo_password = $2 RETURNING *",
+        [userEmail, userPass],
+        (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (result.rows.length !== 0) {
+                result.rows[0]
+            }
+        }
+    );
+})
 
 // List User details  ========
 app.get("/api/user", (req, res) => {
@@ -28,7 +56,6 @@ app.get("/api/user", (req, res) => {
         res.json(result.rows);
     })
 });
-
 
 // Create User Details ===============
 app.post("/api/userPost", async (req, res) => {
