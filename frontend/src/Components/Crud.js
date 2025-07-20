@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { Container, Row, Col, Form, Button, Table } from 'react-bootstrap'
+import React, { useEffect, useState, useRef } from 'react'
+import { Container, Row, Col, Form, Button, Table, Modal } from 'react-bootstrap'
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import "./crud.css";
 import Common from "./../Common";
-import Login from './Login';
-import Register from './Register';
 
 const Crud = () => {
 
@@ -14,6 +12,7 @@ const Crud = () => {
     const apiUrl = "http://localhost:8000"; // local url
 
     // Form
+    const fileInputRef = useRef();
     const [userData, setUserData] = useState([]);
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -22,8 +21,11 @@ const Crud = () => {
     const [isEdit, setIsEdit] = useState(false);
     const [image, setImage] = useState("");
     const [uId, setUid] = useState(0);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isRegistered, setIsRegisterd] = useState(false);
+
+    // Modal to view uploaded image 
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+
 
     useEffect(() => {
         getUserData();
@@ -69,12 +71,13 @@ const Crud = () => {
     // }
 
     const handleAdd = () => {
-        if (!name || !email || !mobile || !city) {
+        if (!name || !email || !mobile || !city || !image) {
             let msg = '';
             if (!name) msg += 'Name, ';
             if (!email) msg += 'Email, ';
             if (!mobile) msg += 'Mobile, ';
             if (!city) msg += 'City, ';
+            if (!image) msg += 'Select Image, ';
             alert(`Please fill the following fields: ${msg.slice(0, -2)}`);
             return;
         }
@@ -94,6 +97,7 @@ const Crud = () => {
                 setMobile("");
                 setCity("");
                 setImage("");
+                fileInputRef.current.value = null;
                 getUserData();
             })
             .catch((err) => {
@@ -110,6 +114,7 @@ const Crud = () => {
             setEmail(data.u_email);
             setMobile(data.u_mobile);
             setCity(data.u_city);
+            setImage(data.u_image);
         }).catch((err) => {
             alert(`Error while fetching user data : ${err.message}`);
         });
@@ -145,148 +150,165 @@ const Crud = () => {
             });
     };
 
+    // const handleImageView = (filename) => {
+    //     const imageUrl = `${apiUrl}/uploads/${filename}`;
+    //     window.open(imageUrl, "_blank");
+    // };
+
+    // View image in modal box
+    const handleImageView = (filename) => {
+        const imageUrl = `${apiUrl}/uploads/${filename}`;
+        setSelectedImage(imageUrl);
+        setShowImageModal(true);
+    };
+
 
     return (
         <>
-            <Container className='mt-5 w-50'>
-                <Row>
-                    <Col className='text-center bg-success'>
-                        <h3> Please Fill Your Form </h3>
-                    </Col>
-                </Row>
+            <Container className='mt-5 w-75'>
+                <Form onSubmit={handleSubmit}>
+                    <Row className='text-center bg-secondary'>
+                        <h3>Fill Form (Information form)</h3>
+                    </Row>
+                    <Row>&nbsp;</Row>
+                    <Row>
+                        <Col className='col-6 col-md-6'>
+                            <Form.Group>
+                                <Form.Label>Name : </Form.Label>
+                                <Form.Control
+                                    type='text'
+                                    placeholder='Enter Your Name'
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col className='col-6 col-md-6'>
+                            <Form.Group>
+                                <Form.Label>Email : </Form.Label>
+                                <Form.Control
+                                    type='text'
+                                    placeholder='Enter Your Name'
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row><Row>
+                        <Col className='col-6 col-md-6'>
+                            <Form.Group>
+                                <Form.Label>Mobile No.</Form.Label>
+                                <Form.Control
+                                    type='text'
+                                    placeholder='Enter Your Mobile No.'
+                                    value={mobile}
+                                    onChange={(e) => setMobile(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col className='col-6 col-md-6'>
+                            <Form.Group>
+                                <Form.Label>Your City</Form.Label>
+                                <Form.Control
+                                    type='text'
+                                    placeholder='Enter Your City'
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col className='col-6 col-md-6  '>
+                            <Form.Group>
+                                <Form.Label>Select Picture</Form.Label>
+                                <Form.Control
+                                    type='file'
+                                    ref={fileInputRef}
+                                    onChange={(e) => setImage(e.target.files[0])}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col style={{ marginTop: '35px' }}>
+                            {
+                                !isEdit ?
+                                    <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
+                                    :
+                                    <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
+                            }
+                        </Col>
+                    </Row>
+                </Form>
                 <Row>&nbsp;</Row>
                 {
-                    !isLoggedIn &&
+                    !isEdit &&
                     <>
-                        <Login />
-                    </>
-                }
-                {
-                    !isRegistered &&
-                    <>
-                        <Register />
-                    </>
-                }
-                {
-                    (isLoggedIn && isRegistered) &&
-                    <>
-                        <Form onSubmit={handleSubmit}>
-                            <Row>
-                                <Col className='col-6 col-md-6'>
-                                    <Form.Group>
-                                        <Form.Label>Name : </Form.Label>
-                                        <Form.Control
-                                            type='text'
-                                            placeholder='Enter Your Name'
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col className='col-6 col-md-6'>
-                                    <Form.Group>
-                                        <Form.Label>Email : </Form.Label>
-                                        <Form.Control
-                                            type='text'
-                                            placeholder='Enter Your Name'
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row><Row>
-                                <Col className='col-6 col-md-6'>
-                                    <Form.Group>
-                                        <Form.Label>Mobile No.</Form.Label>
-                                        <Form.Control
-                                            type='text'
-                                            placeholder='Enter Your Mobile No.'
-                                            value={mobile}
-                                            onChange={(e) => setMobile(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col className='col-6 col-md-6'>
-                                    <Form.Group>
-                                        <Form.Label>Your City</Form.Label>
-                                        <Form.Control
-                                            type='text'
-                                            placeholder='Enter Your City'
-                                            value={city}
-                                            onChange={(e) => setCity(e.target.value)}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col className='col-6 col-md-6  '>
-                                    <Form.Group>
-                                        <Form.Label>Select Picture</Form.Label>
-                                        <Form.Control
-                                            type='file'
-                                            onChange={(e) => setImage(e.target.files[0])}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col style={{ marginTop: '35px' }}>
-                                    {
-                                        !isEdit ?
-                                            <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
-                                            :
-                                            <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
-                                    }
-                                </Col>
-                            </Row>
-                        </Form>
-                        <Row>&nbsp;</Row>
-                        {
-                            !isEdit &&
-                            <>
 
-                                <Row>
-                                    <Col>
-                                        <Table bordered striped>
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Email</th>
-                                                    <th>Mobile</th>
-                                                    <th>City</th>
-                                                    <th>Actions</th>
+                        <Row>
+                            <Col>
+                                <Table bordered striped>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>City</th>
+                                            <th>Image</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {
+                                            userData.map((row) => (
+                                                <tr key={row.u_id}>
+                                                    <td>{row.u_id}</td>
+                                                    <td>{row.u_name}</td>
+                                                    <td>{row.u_email}</td>
+                                                    <td>{row.u_mobile}</td>
+                                                    <td>{row.u_city}</td>
+                                                    <td>
+                                                        {row.u_image}&nbsp; &nbsp;
+                                                        {row.u_image &&
+                                                            (<span className='colorThemeBlue' style={{ cursor: 'pointer', marginTop: '50px' }} onClick={() => handleImageView(row.u_image)}><FontAwesomeIcon icon={faEye} /></span>
+                                                            )}
+                                                        {/* &nbsp; &nbsp;{row.u_image} */}
+                                                    </td>
+                                                    <td>
+                                                        <div>
+                                                            <span className='colorThemeBlue' style={{ cursor: 'pointer' }} onClick={() => handleEdit(row.u_id)}>
+                                                                <FontAwesomeIcon icon={faPenToSquare} />
+                                                            </span> &nbsp;
+                                                            <span className='colorThemeDelete' onClick={() => handleDelete(row.u_id)} >
+                                                                <FontAwesomeIcon icon={faTrash} />
+                                                            </span>
+                                                        </div>
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {
-                                                    userData.map((row) => (
-                                                        <tr key={row.u_id}>
-                                                            <td>{row.u_id}</td>
-                                                            <td>{row.u_name}</td>
-                                                            <td>{row.u_email}</td>
-                                                            <td>{row.u_mobile}</td>
-                                                            <td>{row.u_city}</td>
-                                                            <td>
-                                                                <div>
-                                                                    <span className='colorThemeBlue' onClick={() => handleEdit(row.u_id)}>
-                                                                        <FontAwesomeIcon icon={faPenToSquare} />
-                                                                    </span> &nbsp;
-                                                                    <span className='colorThemeBlue' onClick={() => handleDelete(row.u_id)} >
-                                                                        <FontAwesomeIcon icon={faTrash} />
-                                                                    </span>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                }
-                                            </tbody>
-                                        </Table>
-                                    </Col>
-                                </Row>
-                            </>
-                        }
+                                            ))
+                                        }
+                                    </tbody>
+                                </Table>
+                            </Col>
+                        </Row>
                     </>
                 }
             </Container>
+            <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Image Preview</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                    {selectedImage && (
+                        <img src={selectedImage} alt="User Upload" style={{ maxWidth: '100%', maxHeight: '400px' }} />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowImageModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     )
 }

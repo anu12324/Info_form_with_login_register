@@ -5,3 +5,23 @@ body {
 .styleButton {
     width: 120px;
 }
+
+.colorThemeEdit {
+    color: black;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.colorThemeDelete {
+    color: black;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.colorThemeDelete:hover {
+    color: red;
+}
+
+.colorThemeBlue:hover {
+    color: green;
+}
