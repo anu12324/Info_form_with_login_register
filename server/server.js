@@ -65,8 +65,6 @@ app.post(`/api/userLogin`, (req, res) => {
 });
 
 
-
-
 // List User details  ========
 app.get("/api/user", (req, res) => {
     db.query("SELECT * FROM master_user ORDER BY u_id", (err, result) => {
@@ -139,7 +137,7 @@ app.put(`/api/userLogout/:userSrno`, (req, res) => {
         "UPDATE user_info SET uinfo_status = $1 WHERE uinfo_srno = $2 RETURNING *", [0, userSrno], (err, result) => {
             if (err) return res.status(500).json({ error: err.message });
             if (result.rows.length === 0) return res.status(404).json({ error: "User not found" });
-            res.send(200).json(result.rows[0]);
+            res.status(200).json({ message: "Logout successful", user: result.rows[0] });
         }
     )
 });
