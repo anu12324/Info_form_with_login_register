@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 app.use('/uploads', express.static('uploads'));
 
-// User Register === 
+// User Register ====
 app.post(`/api/register`, async (req, res) => {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
     const status = 1;
@@ -37,21 +37,27 @@ app.post(`/api/register`, async (req, res) => {
     }
 });
 
-// user Login === 
+// user Login ==== 
 app.post(`/api/userLogin`, (req, res) => {
     const { userEmail, userPass } = req.body;
     const fetchQuery = "SELECT * FROM user_info WHERE uinfo_email = $1";
     db.query(fetchQuery, [userEmail], async (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         if (result.rows.length === 0) return res.status(401).json({ error: "Invalid credentials" });
-        res.json(result.rows[0]);
-        // const user = result.rows[0];
 
+        const updateQuery = "UPDATE user_info SET uinfo_status = $1 WHERE uinfo_email = $2 RETURNING *";
+        db.query(updateQuery, [1, userEmail], (err, updateResult) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.send(200).json({ message: "Login Successful", user: updateQuery.rows[0], });
+        });
+
+        // const user = result.rows[0];
         // Compare both endered password and hashed password
         // const isPasswordValid = await bcrypt.compare(userPass, user.uinfo_password);
         // if (!isPasswordValid) {
         //     return res.status(401).json({ error: "Invalid Password!" });
         // }
+
     });
 });
 
@@ -122,6 +128,16 @@ app.delete(`/api/userDelete/:id`, async (req, res) => {
     }
 });
 
+app.put(`/api/userLogout/:userSrno`, (req, res) => {
+    const userSrno = req.params.userSrno;
+    db.query(
+        "UPDATE user_info SET uinfo_status = $1 WHERE uinfo_srno = $2 RETURNING *", [0, userSrno], (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (result.rows.length === 0) return res.status(404).json({ error: "User not found" });
+            res.send(200).json(result.rows[0]);
+        }
+    )
+});
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

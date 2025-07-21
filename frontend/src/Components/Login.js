@@ -9,9 +9,11 @@ const Login = () => {
     const apiUrl = "http://localhost:8000"; // local url
 
     // Login 
-    const [loginCred, setLoginCred] = useState([]);
+    // const [loginCred, setLoginCred] = useState([]);
     const [userEmail, setUserEmail] = useState("");
     const [userPass, setUserPass] = useState("");
+    const [userSrno, setUserSrno] = useState("");
+    const [userStatus, setUserStatus] = useState("");
 
     // Register
     const [regFirstName, setRegFirstName] = useState("");
@@ -46,6 +48,8 @@ const Login = () => {
                 setRegEmail("");
                 setRegPassword("");
                 setRegConfirmPassword("");
+                setUserEmail("");
+                setUserEmail("");
                 setIsLoggedIn(true);
             }).catch((err) => {
                 alert(`Error : ${err.message}`);
@@ -66,6 +70,8 @@ const Login = () => {
                 // setLoginCred(res.data);
                 if (res.data.uinfo_email === userEmail && res.data.uinfo_password === userPass) {
                     alert(` User '${userEmail}' Logged In Successfully!`);
+                    setUserSrno(res.data.uinfo_srno);
+                    setUserStatus(res.data.uinfo_status);
                     setShowFormDetails(true);
                 } else {
                     console.warn(`User email or Password Incorrect!`);
@@ -127,7 +133,7 @@ const Login = () => {
                             </div>
                         </> : (isLoggedIn && showFormDetails) ?
                             <>
-                                <Crud />
+                                <Crud userSrno={userSrno} userStatus={userStatus} />
                             </> :
                             <>
                                 <Row className='text-center'>

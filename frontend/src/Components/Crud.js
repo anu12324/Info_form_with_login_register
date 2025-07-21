@@ -3,10 +3,11 @@ import { Container, Row, Col, Form, Button, Table, Modal } from 'react-bootstrap
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+// import Select from "react-select";
 import "./crud.css";
 import Common from "./../Common";
 
-const Crud = () => {
+const Crud = (props) => {
 
     // const apiUrl = process.env.REACT_APP_API_URL; // ENV URL
     const apiUrl = "http://localhost:8000"; // local url
@@ -25,6 +26,9 @@ const Crud = () => {
     // Modal to view uploaded image 
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+
+    // Show Admin Login
+    const [selectLogin, setSelectLogin] = useState("");
 
 
     useEffect(() => {
@@ -162,13 +166,41 @@ const Crud = () => {
         setShowImageModal(true);
     };
 
+    const handleSelectLogin = (e) => {
+        setSelectLogin(e.target.value);
+        // if (selectLogin === "logout") {
+        if (e.target.value === "logout") {
+            axios.put(`${apiUrl}/api/userLogout/${props.userSrno}`)
+                .then((res) => {
+                    alert(`User Logged Out Successfully!`);
+
+                }).catch((err) => {
+                    alert(`Error Logging out: ${err.message}`);
+                });
+        }
+    };
+
 
     return (
         <>
             <Container className='mt-5 w-75'>
                 <Form onSubmit={handleSubmit}>
-                    <Row className='text-center bg-secondary'>
-                        <h3>Fill Form (Information form)</h3>
+                    <Row className='bg-success'>
+                        <Col className='col-6 col-md-10'>
+                            <h3>Fill Form (Information Form)</h3>
+                        </Col>
+                        <Col className='col-6 col-md-1'>
+                            <select className='h-100 rounded-left' value={selectLogin} onChange={(e) => handleSelectLogin(e)} >
+                                {
+                                    (!(props.userSrno) && !(props.userStatus)) ? <option value="login">Login</option> :
+                                        (props.userStatus === 1) &&
+                                        <>
+                                            <option option value={props.userSrno}>{props.userName}</option>
+                                            <option value="logout">Log out</option>
+                                        </>
+                                }
+                            </select>
+                        </Col>
                     </Row>
                     <Row>&nbsp;</Row>
                     <Row>
@@ -188,7 +220,7 @@ const Crud = () => {
                                 <Form.Label>Email : </Form.Label>
                                 <Form.Control
                                     type='text'
-                                    placeholder='Enter Your Name'
+                                    placeholder='Enter Your Email'
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -293,7 +325,7 @@ const Crud = () => {
                         </Row>
                     </>
                 }
-            </Container>
+            </Container >
             <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Image Preview</Modal.Title>

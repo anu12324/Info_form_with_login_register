@@ -25,3 +25,9 @@ body {
 .colorThemeBlue:hover {
     color: green;
 }
+
+.admin {
+    border: 2px solid antiquewhite;
+    color: white;
+    text-transform: uppercase;
+}
