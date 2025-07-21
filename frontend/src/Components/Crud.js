@@ -6,6 +6,7 @@ import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons
 // import Select from "react-select";
 import "./crud.css";
 import Common from "./../Common";
+import Login from './Login';
 
 const Crud = (props) => {
 
@@ -29,6 +30,7 @@ const Crud = (props) => {
 
     // Show Admin Login
     const [selectLogin, setSelectLogin] = useState("");
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
 
 
     useEffect(() => {
@@ -44,35 +46,6 @@ const Crud = (props) => {
     const handleSubmit = (e) => {
         e.preventDefault();
     }
-
-    // const handleAdd = () => {
-    //     let msg = '';
-    //     if (!name || !email || !mobile || !mobile || !city) {
-    //         if (!name) msg += 'Name, ';
-    //         if (!email) msg += 'Email, ';
-    //         if (!mobile) msg += 'Mobile, ';
-    //         if (!city) msg += 'City, ';
-    //         alert(`Please fill the following fields: ${msg.slice(0, -2)}`);
-    //         return;
-    //     }
-    //     // axios.post("http://localhost:8000/api/user", { name: name, email: email, mobile: mobile, city: city })
-    //     axios.post(`${apiUrl}/api/userPost`, {
-    //         name,
-    //         email,
-    //         mobile,
-    //         city
-    //     })
-    //         .then((res) => {
-    //             alert(`User Added Successfully!`);
-    //             setName("");
-    //             setEmail("");
-    //             setMobile("");
-    //             setCity("");
-    //             getUserData();
-    //         }).catch((err) => {
-    //             alert(`Error while Adding user: ${err.message}`);
-    //         });
-    // }
 
     const handleAdd = () => {
         if (!name || !email || !mobile || !city || !image) {
@@ -141,7 +114,6 @@ const Crud = (props) => {
         });
     };
 
-
     const handleDelete = (id) => {
         if (!window.confirm("Are you sure to delete this user?")) return;
 
@@ -173,7 +145,7 @@ const Crud = (props) => {
             axios.put(`${apiUrl}/api/userLogout/${props.userSrno}`)
                 .then((res) => {
                     alert(`User Logged Out Successfully!`);
-
+                    setIsLoggedIn(false);
                 }).catch((err) => {
                     alert(`Error Logging out: ${err.message}`);
                 });
@@ -184,148 +156,156 @@ const Crud = (props) => {
     return (
         <>
             <Container className='mt-5 w-75'>
-                <Form onSubmit={handleSubmit}>
-                    <Row className='bg-success'>
-                        <Col className='col-6 col-md-10'>
-                            <h3>Fill Form (Information Form)</h3>
-                        </Col>
-                        <Col className='col-6 col-md-1'>
-                            <select className='h-100 rounded-left' value={selectLogin} onChange={(e) => handleSelectLogin(e)} >
-                                {
-                                    (!(props.userSrno) && !(props.userStatus)) ? <option value="login">Login</option> :
-                                        (props.userStatus === 1) &&
-                                        <>
-                                            <option option value={props.userSrno}>{props.userName}</option>
-                                            <option value="logout">Log out</option>
-                                        </>
-                                }
-                            </select>
-                        </Col>
-                    </Row>
-                    <Row>&nbsp;</Row>
-                    <Row>
-                        <Col className='col-6 col-md-6'>
-                            <Form.Group>
-                                <Form.Label>Name : </Form.Label>
-                                <Form.Control
-                                    type='text'
-                                    placeholder='Enter Your Name'
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col className='col-6 col-md-6'>
-                            <Form.Group>
-                                <Form.Label>Email : </Form.Label>
-                                <Form.Control
-                                    type='text'
-                                    placeholder='Enter Your Email'
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row><Row>
-                        <Col className='col-6 col-md-6'>
-                            <Form.Group>
-                                <Form.Label>Mobile No.</Form.Label>
-                                <Form.Control
-                                    type='text'
-                                    placeholder='Enter Your Mobile No.'
-                                    value={mobile}
-                                    onChange={(e) => setMobile(e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col className='col-6 col-md-6'>
-                            <Form.Group>
-                                <Form.Label>Your City</Form.Label>
-                                <Form.Control
-                                    type='text'
-                                    placeholder='Enter Your City'
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col className='col-6 col-md-6  '>
-                            <Form.Group>
-                                <Form.Label>Select Picture</Form.Label>
-                                <Form.Control
-                                    type='file'
-                                    ref={fileInputRef}
-                                    onChange={(e) => setImage(e.target.files[0])}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col style={{ marginTop: '35px' }}>
-                            {
-                                !isEdit ?
-                                    <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
-                                    :
-                                    <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
-                            }
-                        </Col>
-                    </Row>
-                </Form>
-                <Row>&nbsp;</Row>
                 {
-                    !isEdit &&
-                    <>
-
-                        <Row>
-                            <Col>
-                                <Table bordered striped>
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Mobile</th>
-                                            <th>City</th>
-                                            <th>Image</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                    isLoggedIn ?
+                        <>
+                            <Form onSubmit={handleSubmit}>
+                                <Row className='bg-success'>
+                                    <Col className='col-6 col-md-10'>
+                                        <h3>Fill Form (Information Form)</h3>
+                                    </Col>
+                                    <Col className='col-6 col-md-1'>
+                                        <select className='h-100 rounded-left' value={selectLogin} onChange={(e) => handleSelectLogin(e)} >
+                                            {
+                                                (!(props.userSrno) && !(props.userStatus)) ? <option value="login">Login</option> :
+                                                    (props.userStatus == 1) &&
+                                                    <>
+                                                        <option value={props.userSrno}>{props.userName}</option>
+                                                        <option value="logout">Log out</option>
+                                                    </>
+                                            }
+                                        </select>
+                                    </Col>
+                                </Row>
+                                <Row>&nbsp;</Row>
+                                <Row>
+                                    <Col className='col-6 col-md-6'>
+                                        <Form.Group>
+                                            <Form.Label>Name : </Form.Label>
+                                            <Form.Control
+                                                type='text'
+                                                placeholder='Enter Your Name'
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col className='col-6 col-md-6'>
+                                        <Form.Group>
+                                            <Form.Label>Email : </Form.Label>
+                                            <Form.Control
+                                                type='text'
+                                                placeholder='Enter Your Email'
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row><Row>
+                                    <Col className='col-6 col-md-6'>
+                                        <Form.Group>
+                                            <Form.Label>Mobile No.</Form.Label>
+                                            <Form.Control
+                                                type='text'
+                                                placeholder='Enter Your Mobile No.'
+                                                value={mobile}
+                                                onChange={(e) => setMobile(e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col className='col-6 col-md-6'>
+                                        <Form.Group>
+                                            <Form.Label>Your City</Form.Label>
+                                            <Form.Control
+                                                type='text'
+                                                placeholder='Enter Your City'
+                                                value={city}
+                                                onChange={(e) => setCity(e.target.value)}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col className='col-6 col-md-6  '>
+                                        <Form.Group>
+                                            <Form.Label>Select Picture</Form.Label>
+                                            <Form.Control
+                                                type='file'
+                                                ref={fileInputRef}
+                                                onChange={(e) => setImage(e.target.files[0])}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col style={{ marginTop: '35px' }}>
                                         {
-                                            userData.map((row) => (
-                                                <tr key={row.u_id}>
-                                                    <td>{row.u_id}</td>
-                                                    <td>{row.u_name}</td>
-                                                    <td>{row.u_email}</td>
-                                                    <td>{row.u_mobile}</td>
-                                                    <td>{row.u_city}</td>
-                                                    <td>
-                                                        {row.u_image}&nbsp; &nbsp;
-                                                        {row.u_image &&
-                                                            (<span className='colorThemeBlue' style={{ cursor: 'pointer', marginTop: '50px' }} onClick={() => handleImageView(row.u_image)}><FontAwesomeIcon icon={faEye} /></span>
-                                                            )}
-                                                        {/* &nbsp; &nbsp;{row.u_image} */}
-                                                    </td>
-                                                    <td>
-                                                        <div>
-                                                            <span className='colorThemeBlue' style={{ cursor: 'pointer' }} onClick={() => handleEdit(row.u_id)}>
-                                                                <FontAwesomeIcon icon={faPenToSquare} />
-                                                            </span> &nbsp;
-                                                            <span className='colorThemeDelete' onClick={() => handleDelete(row.u_id)} >
-                                                                <FontAwesomeIcon icon={faTrash} />
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
+                                            !isEdit ?
+                                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
+                                                :
+                                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
                                         }
-                                    </tbody>
-                                </Table>
-                            </Col>
-                        </Row>
-                    </>
+                                    </Col>
+                                </Row>
+                            </Form>
+                            <Row>&nbsp;</Row>
+                            {
+                                !isEdit &&
+                                <>
+
+                                    <Row>
+                                        <Col>
+                                            <Table bordered striped>
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Name</th>
+                                                        <th>Email</th>
+                                                        <th>Mobile</th>
+                                                        <th>City</th>
+                                                        <th>Image</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {
+                                                        userData.map((row) => (
+                                                            <tr key={row.u_id}>
+                                                                <td>{row.u_id}</td>
+                                                                <td>{row.u_name}</td>
+                                                                <td>{row.u_email}</td>
+                                                                <td>{row.u_mobile}</td>
+                                                                <td>{row.u_city}</td>
+                                                                <td>
+                                                                    {row.u_image}&nbsp; &nbsp;
+                                                                    {row.u_image &&
+                                                                        (<span className='colorThemeBlue' style={{ cursor: 'pointer', marginTop: '50px' }} onClick={() => handleImageView(row.u_image)}><FontAwesomeIcon icon={faEye} /></span>
+                                                                        )}
+                                                                    {/* &nbsp; &nbsp;{row.u_image} */}
+                                                                </td>
+                                                                <td>
+                                                                    <div>
+                                                                        <span className='colorThemeBlue' style={{ cursor: 'pointer' }} onClick={() => handleEdit(row.u_id)}>
+                                                                            <FontAwesomeIcon icon={faPenToSquare} />
+                                                                        </span> &nbsp;
+                                                                        <span className='colorThemeDelete' onClick={() => handleDelete(row.u_id)} >
+                                                                            <FontAwesomeIcon icon={faTrash} />
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    }
+                                                </tbody>
+                                            </Table>
+                                        </Col>
+                                    </Row>
+                                </>
+                            }
+                        </> :
+                        <>
+                            <Login />
+                        </>
                 }
-            </Container >
+            </Container>
             <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Image Preview</Modal.Title>

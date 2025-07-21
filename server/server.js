@@ -45,21 +45,26 @@ app.post(`/api/userLogin`, (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         if (result.rows.length === 0) return res.status(401).json({ error: "Invalid credentials" });
 
-        const updateQuery = "UPDATE user_info SET uinfo_status = $1 WHERE uinfo_email = $2 RETURNING *";
-        db.query(updateQuery, [1, userEmail], (err, updateResult) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.send(200).json({ message: "Login Successful", user: updateQuery.rows[0], });
-        });
-
         // const user = result.rows[0];
-        // Compare both endered password and hashed password
+
         // const isPasswordValid = await bcrypt.compare(userPass, user.uinfo_password);
         // if (!isPasswordValid) {
         //     return res.status(401).json({ error: "Invalid Password!" });
         // }
 
+        const updateQuery = "UPDATE user_info SET uinfo_status = $1 WHERE uinfo_email = $2 RETURNING *";
+        db.query(updateQuery, [1, userEmail], (err, updateResult) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            return res.status(200).json({
+                message: "Login Successful",
+                user: updateResult.rows[0],
+            });
+        });
     });
 });
+
+
 
 
 // List User details  ========
