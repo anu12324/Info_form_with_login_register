@@ -9,3 +9,4 @@ create table user_info(uinfo_srno int primary key, uinfo_First_name varchar(100)
 
 alter table user_info add column uinfo_confirm_password varchar(15);
 alter table user_info add column uinfo_status smallint;
+alter table master_user add column u_user int;

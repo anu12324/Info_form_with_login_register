@@ -66,8 +66,9 @@ app.post(`/api/userLogin`, (req, res) => {
 
 
 // List User details  ========
-app.get("/api/user", (req, res) => {
-    db.query("SELECT * FROM master_user ORDER BY u_id", (err, result) => {
+app.get(`/api/user/:userSrno`, (req, res) => {
+    const userSrno = req.params.userSrno;
+    db.query("SELECT * FROM master_user WHERE u_user = $1 ORDER BY u_id", [userSrno], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(result.rows);
     })
@@ -75,7 +76,7 @@ app.get("/api/user", (req, res) => {
 
 // Create User Details ===============
 app.post(`/api/userPost`, upload.any(), async (req, res) => {
-    const { name, email, mobile, city } = req.body;
+    const { name, email, mobile, city, userId } = req.body;
     const imagePath = req.files ? req.files[0].filename : null;
     console.log(`Image name is : ${req.files[0].filename}`);
     try {
@@ -83,10 +84,8 @@ app.post(`/api/userPost`, upload.any(), async (req, res) => {
         const nextId = maxRes.rows[0].next_id;
 
         const insertRes = await db.query(
-            "INSERT INTO master_user (u_id, u_name, u_email, u_mobile, u_city, u_image, u_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *"
-            // "INSERT INTO master_user (u_id, u_name, u_email, u_mobile, u_city) VALUES ($1, $2, $3, $4, $5) RETURNING *"
-            , [nextId, name, email, mobile, city, imagePath]
-            // , [nextId, name, email, mobile, city]
+            "INSERT INTO master_user (u_id, u_name, u_email, u_mobile, u_city, u_image, u_user) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *"
+            , [nextId, name, email, mobile, city, imagePath, userId]
         );
         res.status(201).json(insertRes.rows[0]);
     } catch (err) {
@@ -105,12 +104,13 @@ app.get(`/api/userEdit/:id`, (req, res) => {
 });
 
 // Updating user by id =======================
-app.put(`/api/userUpdate/:id`, (req, res) => {
-    const { name, email, mobile, city } = req.body;
-    const id = req.params.id;
+app.put(`/api/userUpdate`, upload.any(), async (req, res) => {
+    const { name, email, mobile, city, uId, userId } = req.body;
+    const imagePath = req.files ? req.files[0].filename : null;
+    // const id = req.params.id;
     db.query(
-        "UPDATE master_user SET u_name = $2, u_email = $3, u_mobile = $4, u_city = $5 WHERE u_id = $1 RETURNING *",
-        [id, name, email, mobile, city],
+        "UPDATE master_user SET u_name = $2, u_email = $3, u_mobile = $4, u_city = $5, u_image = $6, u_user = $7 WHERE u_id = $1 RETURNING *",
+        [uId, name, email, mobile, city, imagePath, userId],
         (err, result) => {
             if (err) return res.status(500).json({ error: err.message });
             if (result.rows.length === 0) return res.status(404).json({ error: "User not found" });
