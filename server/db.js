@@ -16,7 +16,8 @@
 
 // module.exports = db;
 
-require('dotenv').config();
+// require('dotenv').config();
+require('dotenv').config({ override: true });   
 const { Pool } = require('pg');
 
 const pool = new Pool({
