@@ -23,6 +23,7 @@ const Crud = (props) => {
     const [isEdit, setIsEdit] = useState(false);
     const [image, setImage] = useState("");
     const [uId, setUid] = useState(0);
+    const [addNewForm, setAddNewForm] = useState(false);
 
     // Modal to view uploaded image 
     const [showImageModal, setShowImageModal] = useState(false);
@@ -38,7 +39,8 @@ const Crud = (props) => {
     }, []);
 
     const getUserData = () => {
-        axios.get(`${apiUrl}/api/user`).then((res) => {
+        const userSrno = props.userSrno;
+        axios.get(`${apiUrl}/api/user/${userSrno}`).then((res) => {
             setUserData(res.data);
         });
     }
@@ -47,7 +49,7 @@ const Crud = (props) => {
         e.preventDefault();
     }
 
-    const handleAdd = () => {
+    const handleSave = () => {
         if (!name || !email || !mobile || !city || !image) {
             let msg = '';
             if (!name) msg += 'Name, ';
@@ -64,22 +66,42 @@ const Crud = (props) => {
         formData.append("email", email);
         formData.append("mobile", mobile);
         formData.append("city", city);
+        formData.append("uId", uId);
+        formData.append("userId", props.userSrno);
         if (image) formData.append("image", image);  //attach image file
-
-        axios.post(`${apiUrl}/api/userPost`, formData)
-            .then((res) => {
-                alert("User Added Successfully");
-                setName("");
-                setEmail("");
-                setMobile("");
-                setCity("");
-                setImage("");
-                fileInputRef.current.value = null;
-                getUserData();
-            })
-            .catch((err) => {
-                alert("Error: " + err.message);
-            });
+        if (uId <= 0) {
+            axios.post(`${apiUrl}/api/userPost`, formData)
+                .then((res) => {
+                    alert("User Added Successfully");
+                    setAddNewForm(false);
+                    setName("");
+                    setEmail("");
+                    setMobile("");
+                    setCity("");
+                    setImage("");
+                    fileInputRef.current.value = null;
+                    getUserData();
+                })
+                .catch((err) => {
+                    alert(`Error: ${err.message}`);
+                });
+        } else {
+            axios.put(`${apiUrl}/api/userUpdate`, formData)
+                .then((res) => {
+                    alert("User Updated");
+                    setIsEdit(false);
+                    setName("");
+                    setEmail("");
+                    setMobile("");
+                    setCity("");
+                    setImage("");
+                    fileInputRef.current.value = null;
+                    getUserData();
+                })
+                .catch((err) => {
+                    alert(`Error: ${err.message}`);
+                });
+        }
     };
 
     const handleEdit = (id) => {
@@ -91,28 +113,11 @@ const Crud = (props) => {
             setEmail(data.u_email);
             setMobile(data.u_mobile);
             setCity(data.u_city);
-            setImage(data.u_image);
+            // setImage(data.u_image);
         }).catch((err) => {
             alert(`Error while fetching user data : ${err.message}`);
         });
     }
-
-    const handleUpdate = () => {
-        axios.put(`${apiUrl}/api/userUpdate/${uId}`, {
-            name, email, mobile, city
-        }).then((res) => {
-            alert("User Updated");
-            setIsEdit(false);
-            setName("");
-            setEmail("");
-            setMobile("");
-            setCity("");
-            setImage("");
-            getUserData();
-        }).catch((err) => {
-            alert(`Error: ${err.message}`);
-        });
-    };
 
     const handleDelete = (id) => {
         if (!window.confirm("Are you sure to delete this user?")) return;
@@ -152,105 +157,132 @@ const Crud = (props) => {
         }
     };
 
+    const handleBack = () => {
+        if (uId > 0) {
+            if (!window.confirm("Are you sure to exit?")) return;
+            setIsEdit(false);
+        } else {
+            setAddNewForm(false);
+        }
+    }
+
+    const addNew = () => {
+        setUid(0);
+        setAddNewForm(true);
+    }
+
 
     return (
         <>
-            <Container className='mt-5 w-75'>
+            <Container className='mt-5 w-100'>
                 {
                     isLoggedIn ?
                         <>
-                            <Form onSubmit={handleSubmit}>
-                                <Row className='bg-success'>
-                                    <Col className='col-6 col-md-10'>
-                                        <h3>Fill Form (Information Form)</h3>
-                                    </Col>
-                                    <Col className='col-6 col-md-1'>
-                                        <select className='h-100 rounded-left' value={selectLogin} onChange={(e) => handleSelectLogin(e)} >
-                                            {
-                                                (!(props.userSrno) && !(props.userStatus)) ? <option value="login">Login</option> :
-                                                    (props.userStatus == 1) &&
-                                                    <>
-                                                        <option value={props.userSrno}>{props.userName}</option>
-                                                        <option value="logout">Log out</option>
-                                                    </>
-                                            }
-                                        </select>
-                                    </Col>
-                                </Row>
-                                <Row>&nbsp;</Row>
-                                <Row>
-                                    <Col className='col-6 col-md-6'>
-                                        <Form.Group>
-                                            <Form.Label>Name : </Form.Label>
-                                            <Form.Control
-                                                type='text'
-                                                placeholder='Enter Your Name'
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col className='col-6 col-md-6'>
-                                        <Form.Group>
-                                            <Form.Label>Email : </Form.Label>
-                                            <Form.Control
-                                                type='text'
-                                                placeholder='Enter Your Email'
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row><Row>
-                                    <Col className='col-6 col-md-6'>
-                                        <Form.Group>
-                                            <Form.Label>Mobile No.</Form.Label>
-                                            <Form.Control
-                                                type='text'
-                                                placeholder='Enter Your Mobile No.'
-                                                value={mobile}
-                                                onChange={(e) => setMobile(e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col className='col-6 col-md-6'>
-                                        <Form.Group>
-                                            <Form.Label>Your City</Form.Label>
-                                            <Form.Control
-                                                type='text'
-                                                placeholder='Enter Your City'
-                                                value={city}
-                                                onChange={(e) => setCity(e.target.value)}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col className='col-6 col-md-6  '>
-                                        <Form.Group>
-                                            <Form.Label>Select Picture</Form.Label>
-                                            <Form.Control
-                                                type='file'
-                                                ref={fileInputRef}
-                                                onChange={(e) => setImage(e.target.files[0])}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col style={{ marginTop: '35px' }}>
+                            <Row className='bg-success'>
+                                <Col className='col-6 col-md-11'>
+                                    <h3>Fill Form (Information Form)</h3>
+                                </Col>
+                                <Col className='col-6 col-md-1'>
+                                    <select className='h-100' value={selectLogin} onChange={(e) => handleSelectLogin(e)} >
                                         {
-                                            !isEdit ?
-                                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleAdd}>Add</Button>
-                                                :
-                                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleUpdate}>Update</Button>
+                                            (!(props.userSrno) && !(props.userStatus)) ? <option value="login">Login</option> :
+                                                (props.userStatus == 1) &&
+                                                <>
+                                                    <option value={props.userSrno}>{props.userName}</option>
+                                                    <option value="logout">Log out</option>
+                                                </>
                                         }
-                                    </Col>
-                                </Row>
-                            </Form>
+                                    </select>
+                                </Col>
+                            </Row>
                             <Row>&nbsp;</Row>
                             {
-                                !isEdit &&
+                                (addNewForm || isEdit) &&
                                 <>
-
+                                    <Form onSubmit={handleSubmit}>
+                                        <Row>
+                                            <Col className='col-6 col-md-6'>
+                                                <Form.Group>
+                                                    <Form.Label>Name : </Form.Label>
+                                                    <Form.Control
+                                                        type='text'
+                                                        placeholder='Enter Your Name'
+                                                        value={name}
+                                                        onChange={(e) => setName(e.target.value)}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                            <Col className='col-6 col-md-6'>
+                                                <Form.Group>
+                                                    <Form.Label>Email : </Form.Label>
+                                                    <Form.Control
+                                                        type='text'
+                                                        placeholder='Enter Your Email'
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                        </Row><Row>
+                                            <Col className='col-6 col-md-6'>
+                                                <Form.Group>
+                                                    <Form.Label>Mobile No.</Form.Label>
+                                                    <Form.Control
+                                                        type='text'
+                                                        placeholder='Enter Your Mobile No.'
+                                                        value={mobile}
+                                                        onChange={(e) => setMobile(e.target.value)}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                            <Col className='col-6 col-md-6'>
+                                                <Form.Group>
+                                                    <Form.Label>Your City</Form.Label>
+                                                    <Form.Control
+                                                        type='text'
+                                                        placeholder='Enter Your City'
+                                                        value={city}
+                                                        onChange={(e) => setCity(e.target.value)}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col className='col-6 col-md-6  '>
+                                                <Form.Group>
+                                                    <Form.Label>Select Picture</Form.Label>
+                                                    <Form.Control
+                                                        type='file'
+                                                        ref={fileInputRef}
+                                                        onChange={(e) => setImage(e.target.files[0])}
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+                                            <Col style={{ marginTop: '35px' }}>
+                                                <Button className='styleButton' variant='outline-success' size='sm' onClick={handleSave}>
+                                                    {uId > 0 && isEdit ? 'Update' : 'Add'}
+                                                </Button>
+                                                &nbsp;
+                                                <Button className='styleButton' variant='outline-primary' size='sm' onClick={handleBack}>
+                                                    Back
+                                                </Button>
+                                            </Col>
+                                        </Row>
+                                    </Form>
+                                    <Row>&nbsp;</Row>
+                                </>
+                            }
+                            {
+                                (!isEdit && !addNewForm) &&
+                                <>
+                                    <Row>
+                                        <Col>
+                                            <Button className='styleButton' variant='outline-primary' size='sm' onClick={addNew}>
+                                                Add New
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                    <Row>&nbsp;</Row>
                                     <Row>
                                         <Col>
                                             <Table bordered striped>

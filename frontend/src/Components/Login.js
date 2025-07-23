@@ -73,11 +73,11 @@ const Login = () => {
                 if (user.uinfo_email === userEmail && user.uinfo_password === userPass) {
                     alert(` User '${userEmail}' Logged In Successfully!`);
                     setUserSrno(user.uinfo_srno);
-                    setUserName(user.uinfo_first_name);
+                    setUserName(`${user.uinfo_first_name} ${user.uinfo_last_name}`);
                     setUserStatus(user.uinfo_status);
                     setShowFormDetails(true);
                 } else {
-                    console.warn(`User email or Password Incorrect!`);
+                    alert(`User email or Password Incorrect!`);
                 }
             })
             .catch((err) => {
@@ -88,33 +88,6 @@ const Login = () => {
                 }
             });
     }
-
-    // const handleLogin = () => {
-    //     if (!userEmail || !userPass) {
-    //         let msg = '';
-    //         if (!userEmail) msg += 'User Email, ';
-    //         if (!userPass) msg += 'Password, ';
-    //         alert(`Please Fill the following fields: ${msg.slice(0, -2)}`);
-    //         return;
-    //     }
-
-    //     axios.post(`${apiUrl}/api/userLogin`, { userEmail, userPass })
-    //         .then((res) => {
-    //             const user = res.data.user;
-    //             alert(`User '${user.uinfo_email}' Logged In Successfully!`);
-    //             setUserSrno(user.uinfo_srno);
-    //             setUserName(user.uinfo_first_name);
-    //             setUserStatus(user.uinfo_status);
-    //             setShowFormDetails(true);
-    //         })
-    //         .catch((err) => {
-    //             if (err.response && err.response.data) {
-    //                 alert(`Error: ${err.response.data.error}`);
-    //             } else {
-    //                 alert(`Error: ${err.message}`);
-    //             }
-    //         });
-    // }
 
 
     return (
