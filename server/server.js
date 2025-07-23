@@ -64,7 +64,6 @@ app.post(`/api/userLogin`, (req, res) => {
     });
 });
 
-
 // List User details  ========
 app.get("/api/user", (req, res) => {
     db.query("SELECT * FROM master_user ORDER BY u_id", (err, result) => {
