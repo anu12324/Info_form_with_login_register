@@ -5,8 +5,8 @@ import Crud from "./Crud";
 
 const Login = () => {
 
-    // const apiUrl = process.env.REACT_APP_API_URL; // ENV URL
-    const apiUrl = "http://localhost:8000"; // local url
+    const apiUrl = process.env.REACT_APP_API_URL; // ENV URL
+    // const apiUrl = "http://localhost:8000"; // local url
 
     // Login 
     // const [loginCred, setLoginCred] = useState([]);

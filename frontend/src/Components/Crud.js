@@ -10,8 +10,8 @@ import Login from './Login';
 
 const Crud = (props) => {
 
-    // const apiUrl = process.env.REACT_APP_API_URL; // ENV URL
-    const apiUrl = "http://localhost:8000"; // local url
+    const apiUrl = process.env.REACT_APP_API_URL; // ENV URL
+    // const apiUrl = "http://localhost:8000"; // local url
 
     // Form
     const fileInputRef = useRef();
